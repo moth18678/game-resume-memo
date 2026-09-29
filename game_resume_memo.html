@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ゲーム復帰メモ｜ゲーム再開・積みゲー管理</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--text:#222;--sub:#70747b;--line:#dddfe3;--main:#222;--soft:#f0f1f3}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
+body.dark{--bg:#17181a;--card:#232528;--text:#f2f2f2;--sub:#a9adb4;--line:#3b3e43;--main:#fff;--soft:#2d3034}
+header{background:#222;color:#fff;padding:28px 20px}header .inner,main{max-width:1000px;margin:auto}h1{margin:0 0 7px;font-size:28px}header p{margin:0;color:#ddd;font-size:14px}
+main{padding:24px 16px 60px}.card{background:var(--card);border-radius:14px;padding:21px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+h2{margin:0 0 17px;font-size:20px}.field{margin-bottom:14px}label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+input,textarea,select{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 11px;background:var(--card);color:var(--text);font:inherit;font-size:14px}
+textarea{min-height:80px;resize:vertical}input:focus,textarea:focus,select:focus{outline:2px solid #aaa;outline-offset:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+button{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:var(--soft);color:var(--text)}
+.primary{background:var(--main);color:var(--card)}.danger{color:#777}.small{padding:7px 10px;font-size:12px}.buttons{display:flex;gap:8px;flex-wrap:wrap}
+.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:18px}.summary-box{background:var(--card);border-radius:11px;padding:13px;text-align:center}
+.summary-number{font-size:21px;font-weight:800}.summary-label{font-size:11px;color:var(--sub);margin-top:2px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}.search{flex:1;min-width:200px}
+.game-list{display:grid;gap:12px}.game-item{border:1px solid var(--line);border-radius:11px;padding:16px}
+.game-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.title{font-size:18px;font-weight:800}
+.badges{display:flex;gap:5px;flex-wrap:wrap;margin:7px 0}.badge,.status{display:inline-block;border-radius:20px;padding:4px 8px;font-size:11px;font-weight:700}
+.status-playing{background:#e7f0ff;color:#174b9c}.status-paused{background:#eee;color:#555}.status-cleared{background:#e7f5e9;color:#246b32}.status-backlog{background:#fff0d9;color:#805100}.status-want{background:#f1e9ff;color:#60389a}
+body.dark .status-playing{background:#253653;color:#bcd5ff}body.dark .status-paused{background:#393b3e;color:#ddd}body.dark .status-cleared{background:#24382a;color:#bce9c4}body.dark .status-backlog{background:#44351f;color:#ffd795}body.dark .status-want{background:#382d4a;color:#dfc9ff}
+.badge{background:var(--soft);color:var(--sub)}.favorite{color:#b17800;background:#fff3cf}.meta{font-size:12px;color:var(--sub);margin:8px 0 12px}.progressbar{height:7px;background:var(--soft);border-radius:8px;overflow:hidden;margin:7px 0 12px}.progressfill{height:100%;background:#555}
+.info{margin:9px 0}.info-label{font-size:11px;color:var(--sub);font-weight:700}.info-text{font-size:14px;line-height:1.55;white-space:pre-wrap}.next-list{margin:5px 0 0;padding-left:21px}.next-list li{margin:4px 0}.done{text-decoration:line-through;color:var(--sub)}
+.item-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}.resume{font-size:14px;padding:11px 15px}
+.empty{text-align:center;color:var(--sub);padding:28px 10px}.notice{font-size:11px;color:var(--sub);line-height:1.6;margin-top:9px}
+.resume-view{display:none}.resume-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.resume-title{font-size:25px;font-weight:800}.resume-block{background:var(--soft);border-radius:11px;padding:16px;margin:10px 0}.resume-label{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:5px}.resume-value{font-size:17px;line-height:1.65;white-space:pre-wrap}
+.today{background:#222;color:#fff}.today .resume-label{color:#bbb}.task-row{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line)}.task-row:last-child{border-bottom:0}.task-row input{width:auto;margin-top:4px}.history{font-size:13px;line-height:1.7}
+.hidden{display:none!important}
+.feedback{border:1px solid var(--line);background:var(--card)}.feedback-box{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.feedback-text{font-size:13px;line-height:1.6;color:var(--sub)}.feedback-text strong{display:block;color:var(--text);font-size:15px;margin-bottom:3px}.feedback-button{background:var(--main);color:var(--card);text-decoration:none;display:inline-block;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;white-space:nowrap}
+details summary{cursor:pointer;font-weight:700;color:var(--sub);font-size:13px}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.game-top{display:block}.resume-title{font-size:21px}}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.info-grid>div{padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--soft);line-height:1.7}.sub{color:var(--sub);font-size:13px}.howto{margin:0;padding-left:22px;line-height:1.9}.update{padding:12px 0;border-bottom:1px solid var(--line);line-height:1.8}.update:last-child{border-bottom:0}.info-card p{line-height:1.8}.feedback-button{display:inline-block;margin-top:4px;text-decoration:none}
+@media(max-width:700px){.info-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="inner">
+<h1>🎮 ゲーム復帰メモ</h1>
+<p>久しぶりに遊ぶゲームを、迷わず再開するためのゲーム管理ツール。</p>
+</div></header>
+
+<main>
+<section id="listView">
+<div class="summary" id="summary"></div>
+
+<section class="card">
+<h2 id="formTitle">ゲームを登録</h2>
+<div class="grid2">
+<div class="field"><label>ゲーム名 *</label><input id="gameName" placeholder="例：ゼノブレイド2"></div>
+<div class="field"><label>状態</label><select id="status">
+<option value="backlog">📦 積みゲー</option><option value="playing">🎮 プレイ中</option>
+<option value="paused">⏸ 一時停止</option><option value="cleared">✅ クリア済み</option><option value="want">❤️ 遊びたい</option>
+</select></div>
+</div>
+<div class="grid3">
+<div class="field"><label>プラットフォーム</label><input id="platform" placeholder="Switch 2 / Steam など"></div>
+<div class="field"><label>ジャンル</label><input id="genre" placeholder="RPG / アクションなど"></div>
+<div class="field"><label>進行率（目安）</label><input id="progressPercent" type="number" min="0" max="100" placeholder="0〜100"></div>
+</div>
+<div class="grid3">
+<div class="field"><label>最後に遊んだ日</label><input id="lastDate" type="date"></div>
+<div class="field"><label>プレイ開始日</label><input id="startDate" type="date"></div>
+<div class="field"><label>購入日</label><input id="purchaseDate" type="date"></div>
+</div>
+<div class="grid2">
+<div class="field"><label>プレイ時間</label><input id="playTime" placeholder="例：35時間20分"></div>
+<div class="field"><label>想定クリア時間</label><input id="estimatedTime" placeholder="例：40〜50時間"></div>
+</div>
+<div class="field"><label>現在地・進行状況</label><input id="progress" placeholder="例：第3話・スペルビア"></div>
+<div class="field"><label>最後にやったこと</label><textarea id="lastPlayed" placeholder="例：ホムラと料理をした"></textarea></div>
+<div class="field"><label>前回終了時の状態</label><textarea id="endState" placeholder="例：次のボス戦直前。HPは満タン。装備を変更する途中。"></textarea></div>
+<div class="field"><label>次にやること</label><textarea id="nextTask" placeholder="例：スペルビアへ行ってストーリーを進める"></textarea></div>
+<div class="field"><label>メモ・攻略メモ</label><textarea id="memo" placeholder="例：○○の敵が強かった。次は○○を確認する。"></textarea></div>
+<div class="buttons">
+<button class="primary" onclick="saveGame()">💾 保存する</button>
+<button id="cancelBtn" onclick="clearForm()" class="hidden">キャンセル</button>
+</div>
+<div class="notice">入力したデータはこのブラウザに保存されます。サーバーには送信しません。</div>
+</section>
+
+<section class="card">
+<h2>ゲーム一覧</h2>
+<div class="toolbar">
+<input class="search" id="search" placeholder="🔍 ゲーム名・機種・ジャンルを検索" oninput="renderGames()">
+<select id="sort" onchange="renderGames()">
+<option value="recent">最近遊んだ順</option><option value="old">放置が長い順</option><option value="name">名前順</option><option value="progress">進行率順</option><option value="added">登録順</option>
+</select>
+</div>
+<div class="toolbar" id="filters">
+<button class="filter active" data-filter="all" onclick="setFilter('all',this)">すべて</button>
+<button class="filter" data-filter="favorite" onclick="setFilter('favorite',this)">⭐ 再開候補</button>
+<button class="filter" data-filter="playing" onclick="setFilter('playing',this)">プレイ中</button>
+<button class="filter" data-filter="backlog" onclick="setFilter('backlog',this)">積みゲー</button>
+<button class="filter" data-filter="paused" onclick="setFilter('paused',this)">一時停止</button>
+<button class="filter" data-filter="cleared" onclick="setFilter('cleared',this)">クリア済み</button>
+</div>
+<div id="gameList" class="game-list"></div>
+</section>
+
+<section class="card feedback">
+<div class="feedback-box">
+<div class="feedback-text"><strong>💬 要望・不具合を送る</strong>「こんな機能がほしい」「ここが使いにくい」など、気づいたことを教えてください。</div>
+<a class="feedback-button" href="https://docs.google.com/forms/d/e/1FAIpQLSfaellP9u0aSbFNAweJ6HjIRsChCjDVJ_TTRzFm08ty5uh1rQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer">要望フォームを開く ↗</a>
+</div>
+</section>
+
+<section class="card info-card">
+<h2>このツールについて</h2>
+<p><strong>ゲーム復帰メモ</strong>は、久しぶりに遊ぶゲームを再開するときに「どこまで進めたっけ？」「次は何をすればいい？」となるのを防ぐためのメモツールです。</p>
+<div class="info-grid">
+<div><strong>🎮 こんなときに</strong><br><span class="sub">積みゲーを久しぶりに再開したいとき、複数のゲームを並行して遊んでいるときに便利です。</span></div>
+<div><strong>📝 記録できること</strong><br><span class="sub">現在地、最後にやったこと、次にやること、進行率、プレイ時間、メモなどを記録できます。</span></div>
+<div><strong>💾 アカウント不要</strong><br><span class="sub">ゲームのメモは基本的にこのブラウザ内に保存されます。サーバーへのゲームデータ送信は行いません。</span></div>
+<div><strong>🔒 データについて</strong><br><span class="sub">ブラウザのデータを削除したり、別のブラウザ・端末で開いたりするとゲームデータは自動では引き継がれません。大切なデータはJSONバックアップをご利用ください。</span></div>
+</div>
+</section>
+
+<section class="card info-card">
+<h2>使い方</h2>
+<ol class="howto">
+<li><strong>ゲームを登録</strong>：ゲーム名と状態を入力して保存します。</li>
+<li><strong>プレイしたら更新</strong>：現在地、最後にやったこと、次にやることなどを更新します。</li>
+<li><strong>久しぶりに遊ぶときは「復帰する」</strong>：前回の状態と今日やることを確認してから再開できます。</li>
+<li><strong>遊び終わったら「今回のプレイを記録」</strong>：その日のプレイ内容を残せます。</li>
+<li><strong>定期的にバックアップ</strong>：データ管理の「データを書き出す」でJSONファイルを保存しておくと安心です。</li>
+</ol>
+</section>
+
+<section class="card info-card">
+<h2>アップデート履歴</h2>
+<div class="update"><strong>2026/09/28</strong><br>・要望・不具合フォームを追加<br>・「このツールについて」「使い方」「データについて」を追加</div>
+<div class="update"><strong>2026/09/27</strong><br>・ゲームの復帰画面を追加<br>・最終プレイ日、プレイ時間、進行率、再開候補などを追加<br>・JSONバックアップ・読み込み、ダークモードを追加</div>
+</section>
+
+<section class="card info-card">
+<h2>要望・不具合について</h2>
+<p>「こんな機能がほしい」「ここが分かりにくい」「うまく動かない」などがあれば、気軽に送ってください。いただいた意見をもとに少しずつ改善していきます。</p>
+<a class="feedback-button" href="https://docs.google.com/forms/d/e/1FAIpQLSfaellP9u0aSbFNAweJ6HjIRsChCjDVJ_TTRzFm08ty5uh1rQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer">💬 要望・不具合を送る ↗</a>
+</section>
+
+<section class="card">
+<h2>データ管理</h2>
+<div class="buttons">
+<button onclick="exportData()">⬇ データを書き出す</button>
+<button onclick="document.getElementById('importFile').click()">⬆ データを読み込む</button>
+<button onclick="toggleDark()">🌙 ダークモード</button>
+</div>
+<input id="importFile" type="file" accept=".json,application/json" class="hidden" onchange="importData(event)">
+<div class="notice">バックアップ用にJSONファイルへ書き出せます。別のブラウザへ移すときにも利用できます。</div>
+</section>
+</section>
+
+<section id="resumeView" class="card resume-view">
+<div class="resume-head"><div class="resume-title" id="resumeTitle"></div><button onclick="showList()">← 一覧に戻る</button></div>
+<div id="resumeContent"></div>
+</section>
+</main>
+
+<script>
+const KEY="gameResumeMemo_v3";let editingId=null,currentFilter="all";
+
+function getGames(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]}}
+function saveGames(g){localStorage.setItem(KEY,JSON.stringify(g))}
+function today(){return new Date().toISOString().slice(0,10)}
+function daysSince(date){if(!date)return null;let a=new Date(date+"T00:00:00"),b=new Date();a.setHours(0,0,0,0);b.setHours(0,0,0,0);return Math.max(0,Math.floor((b-a)/86400000))}
+function dateText(d){if(!d)return"未入力";let x=new Date(d+"T00:00:00");return(x.getMonth()+1)+"月"+x.getDate()+"日"}
+function statusName(s){return({backlog:"積みゲー",playing:"プレイ中",paused:"一時停止",cleared:"クリア済み",want:"遊びたい"})[s]||"プレイ中"}
+function esc(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function uid(){return Date.now()+Math.floor(Math.random()*1000)}
+
+function saveGame(){
+ const name=document.getElementById("gameName").value.trim();if(!name){alert("ゲーム名を入力してください。");return}
+ const data={
+  gameName:name,status:document.getElementById("status").value,platform:document.getElementById("platform").value.trim(),
+  genre:document.getElementById("genre").value.trim(),progressPercent:Math.min(100,Math.max(0,Number(document.getElementById("progressPercent").value)||0)),
+  lastDate:document.getElementById("lastDate").value,startDate:document.getElementById("startDate").value,purchaseDate:document.getElementById("purchaseDate").value,
+  playTime:document.getElementById("playTime").value.trim(),estimatedTime:document.getElementById("estimatedTime").value.trim(),
+  progress:document.getElementById("progress").value.trim(),lastPlayed:document.getElementById("lastPlayed").value.trim(),
+  endState:document.getElementById("endState").value.trim(),nextTask:document.getElementById("nextTask").value.trim(),
+  memo:document.getElementById("memo").value.trim(),updatedAt:Date.now()
+ };
+ let games=getGames();
+ if(editingId!==null){let i=games.findIndex(g=>g.id===editingId);if(i>=0)games[i]={...games[i],...data}}
+ else games.unshift({id:uid(),...data,favorite:false,tasks:[],history:[]});
+ saveGames(games);clearForm();renderGames();
+}
+
+function editGame(id){
+ const g=getGames().find(x=>x.id===id);if(!g)return;
+ ["gameName","platform","genre","progress","lastPlayed","endState","nextTask","memo","playTime","estimatedTime","lastDate","startDate","purchaseDate","progressPercent"].forEach(k=>document.getElementById(k).value=g[k]??"");
+ document.getElementById("status").value=g.status||"playing";editingId=id;
+ document.getElementById("formTitle").textContent="ゲームを編集";document.getElementById("cancelBtn").classList.remove("hidden");
+ scrollTo({top:0,behavior:"smooth"});
+}
+function clearForm(){
+ ["gameName","platform","genre","progress","lastPlayed","endState","nextTask","memo","playTime","estimatedTime","lastDate","startDate","purchaseDate","progressPercent"].forEach(k=>document.getElementById(k).value="");
+ document.getElementById("status").value="backlog";editingId=null;
+ document.getElementById("formTitle").textContent="ゲームを登録";document.getElementById("cancelBtn").classList.add("hidden");
+}
+function deleteGame(id){let g=getGames().find(x=>x.id===id);if(!g)return;if(confirm("「"+g.gameName+"」を削除しますか？")){saveGames(getGames().filter(x=>x.id!==id));renderGames()}}
+function toggleFavorite(id){let g=getGames().find(x=>x.id===id);if(!g)return;g.favorite=!g.favorite;saveGames(getGames());renderGames()}
+function setFilter(f,b){currentFilter=f;document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderGames()}
+
+function matches(g,q){return[g.gameName,g.platform,g.genre,g.progress,g.memo].join(" ").toLowerCase().includes(q.toLowerCase())}
+function sortGames(games){
+ let s=document.getElementById("sort").value;
+ return games.sort((a,b)=>{
+  if(s==="name")return a.gameName.localeCompare(b.gameName,"ja");
+  if(s==="progress")return (b.progressPercent||0)-(a.progressPercent||0);
+  if(s==="old")return (daysSince(b.lastDate)||-1)-(daysSince(a.lastDate)||-1);
+  if(s==="added")return (b.id||0)-(a.id||0);
+  return (b.lastDate||"").localeCompare(a.lastDate||"");
+ })
+}
+function renderSummary(){
+ let gs=getGames(),playing=gs.filter(g=>g.status==="playing").length,backlog=gs.filter(g=>g.status==="backlog").length,paused=gs.filter(g=>g.status==="paused").length;
+ document.getElementById("summary").innerHTML=
+ '<div class="summary-box"><div class="summary-number">'+gs.length+'</div><div class="summary-label">登録ゲーム</div></div>'+
+ '<div class="summary-box"><div class="summary-number">'+playing+'</div><div class="summary-label">プレイ中</div></div>'+
+ '<div class="summary-box"><div class="summary-number">'+backlog+'</div><div class="summary-label">積みゲー</div></div>'+
+ '<div class="summary-box"><div class="summary-number">'+paused+'</div><div class="summary-label">一時停止</div></div>'+
+ '<div class="summary-box"><div class="summary-number">'+gs.filter(g=>g.status==="cleared").length+'</div><div class="summary-label">クリア済み</div></div>';
+}
+function renderGames(){
+ renderSummary();let q=document.getElementById("search").value.trim(),gs=getGames().filter(g=>!q||matches(g,q));
+ if(currentFilter==="favorite")gs=gs.filter(g=>g.favorite);
+ else if(currentFilter!=="all")gs=gs.filter(g=>(g.status||"backlog")===currentFilter);
+ gs=sortGames(gs);let list=document.getElementById("gameList");
+ if(!gs.length){list.innerHTML='<div class="empty">該当するゲームがありません。</div>';return}
+ list.innerHTML=gs.map(g=>{
+  let d=daysSince(g.lastDate),gap=d===null?"最終プレイ日未入力":d===0?"今日プレイ":d+"日ぶり";
+  let tags=(g.platform?'<span class="badge">'+esc(g.platform)+'</span>':'')+(g.genre?'<span class="badge">'+esc(g.genre)+'</span>':'')+(g.favorite?'<span class="badge favorite">⭐ 再開候補</span>':'');
+  let pct=Number(g.progressPercent)||0;
+  return '<div class="game-item"><div class="game-top"><div class="title">🎮 '+esc(g.gameName)+'</div><span class="status status-'+(g.status||"backlog")+'">'+statusName(g.status||"backlog")+'</span></div>'+
+  '<div class="badges">'+tags+'</div><div class="meta">'+gap+(g.lastDate?"　・　"+dateText(g.lastDate):"")+(g.playTime?"　・　"+esc(g.playTime):"")+'</div>'+
+  (pct?'<div class="meta">進行率 '+pct+'%</div><div class="progressbar"><div class="progressfill" style="width:'+pct+'%"></div></div>':'')+
+  (g.progress?'<div class="info"><div class="info-label">📍 現在地</div><div class="info-text">'+esc(g.progress)+'</div></div>':'')+
+  (g.nextTask?'<div class="info"><div class="info-label">▶ 次にやること</div><div class="info-text">'+esc(g.nextTask)+'</div></div>':'')+
+  '<div class="item-actions"><button class="primary resume" onclick="resumeGame('+g.id+')">▶ 復帰する</button><button onclick="toggleFavorite('+g.id+')">'+(g.favorite?"⭐ 再開候補から外す":"☆ 再開候補にする")+'</button><button onclick="editGame('+g.id+')">✏️ 編集</button><button class="danger" onclick="deleteGame('+g.id+')">🗑️ 削除</button></div></div>'
+ }).join("");
+}
+
+function resumeGame(id){
+ let g=getGames().find(x=>x.id===id);if(!g)return;
+ document.getElementById("listView").style.display="none";document.getElementById("resumeView").style.display="block";
+ document.getElementById("resumeTitle").textContent="🎮 "+g.gameName;
+ let d=daysSince(g.lastDate),gap=d===null?"最後に遊んだ日：未入力":d===0?"今日プレイ":d+"日ぶりに再開";
+ let tasks=g.tasks||[];
+ document.getElementById("resumeContent").innerHTML=
+ '<div class="resume-block"><div class="resume-label">状態</div><div class="resume-value"><span class="status status-'+(g.status||"backlog")+'">'+statusName(g.status||"backlog")+'</span>　'+gap+'</div></div>'+
+ '<div class="resume-block"><div class="resume-label">📍 現在地</div><div class="resume-value">'+esc(g.progress||"未入力")+'</div></div>'+
+ '<div class="resume-block"><div class="resume-label">📝 最後にやったこと</div><div class="resume-value">'+esc(g.lastPlayed||"未入力")+'</div></div>'+
+ '<div class="resume-block"><div class="resume-label">⏹ 前回終了時の状態</div><div class="resume-value">'+esc(g.endState||"未入力")+'</div></div>'+
+ '<div class="resume-block today"><div class="resume-label">▶ 今日やること</div><div class="resume-value">'+esc(g.nextTask||"まだ決めていません")+'</div></div>'+
+ '<div class="resume-block"><div class="resume-label">☑ 次にやることリスト</div><div id="taskArea">'+(tasks.length?tasks.map((t,i)=>'<div class="task-row"><input type="checkbox" '+(t.done?"checked":"")+' onchange="toggleTask('+g.id+','+i+',this.checked)"><span class="'+(t.done?"done":"")+'">'+esc(t.text)+'</span></div>').join(""):'<div class="info-text">まだありません。編集画面から追加できます。</div>')+'</div></div>'+
+ '<div class="resume-block"><div class="resume-label">💡 メモ</div><div class="resume-value">'+esc(g.memo||"未入力")+'</div></div>'+
+ '<div class="resume-block"><div class="resume-label">📊 プレイ情報</div><div class="resume-value">プレイ時間：'+esc(g.playTime||"未入力")+'\\n想定クリア時間：'+esc(g.estimatedTime||"未入力")+'\\n進行率：'+(g.progressPercent||0)+'%</div></div>'+
+ '<div class="buttons"><button class="primary" onclick="editGameFromResume('+g.id+')">✏️ 編集する</button><button onclick="addSession('+g.id+')">⏱ 今回のプレイを記録</button></div>';
+}
+function editGameFromResume(id){showList();editGame(id)}
+function showList(){document.getElementById("listView").style.display="block";document.getElementById("resumeView").style.display="none"}
+function toggleTask(id,i,done){let g=getGames().find(x=>x.id===id);if(!g)return;g.tasks=g.tasks||[];if(g.tasks[i])g.tasks[i].done=done;saveGames(getGames())}
+function addSession(id){
+ let g=getGames().find(x=>x.id===id);if(!g)return;
+ let note=prompt("今回プレイした内容をメモ（空欄でも可）");
+ if(note===null)return;
+ g.history=g.history||[];g.history.unshift({date:today(),note});
+ g.lastDate=today();g.updatedAt=Date.now();saveGames(getGames());resumeGame(id);
+}
+
+function exportData(){
+ let blob=new Blob([JSON.stringify(getGames(),null,2)],{type:"application/json"});
+ let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="game-resume-memo-backup.json";a.click();URL.revokeObjectURL(a.href)
+}
+function importData(e){
+ let file=e.target.files[0];if(!file)return;
+ let r=new FileReader();r.onload=()=>{
+  try{let data=JSON.parse(r.result);if(!Array.isArray(data))throw Error();if(!confirm("現在のデータに上書きして読み込みます。よろしいですか？"))return;saveGames(data);renderGames();alert("読み込みました。")}
+  catch(x){alert("正しいバックアップファイルではありません。")}
+  e.target.value="";
+ };r.readAsText(file)
+}
+function toggleDark(){document.body.classList.toggle("dark");localStorage.setItem("gameDark",document.body.classList.contains("dark")?"1":"0")}
+if(localStorage.getItem("gameDark")==="1")document.body.classList.add("dark")
+
+/* 旧版のデータが残っていた場合も可能な範囲で表示できるよう補完 */
+(function migrate(){
+ let old=localStorage.getItem("gameResumeMemo");
+ if(!localStorage.getItem(KEY)&&old){try{
+  let data=JSON.parse(old).map(g=>({...g,status:g.status||"playing",favorite:false,tasks:[],history:[],progressPercent:0}));
+  saveGames(data)
+ }catch(e){}}
+})();
+renderGames();
+</script>
+</body>
+</html>
